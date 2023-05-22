@@ -7,6 +7,9 @@ import { useEffect, useState, useTransition } from 'react';
 
 import LoadingDots from 'components/loading-dots';
 import { VercelProductVariant as ProductVariant } from 'lib/bigcommerce/types';
+import { useCookies } from 'react-cookie';
+
+const isBigCommerceAPI = true;
 
 export function AddToCart({
   variants,
@@ -19,6 +22,7 @@ export function AddToCart({
   const varianEntitytId = variants[0]?.id;
   const [selectedVariantId, setSelectedVariantId] = useState(varianEntitytId);
   const [selectedProductId, setSelectedProductId] = useState(productEntityId);
+  const [,setCookie] = useCookies(['cartId']);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -43,12 +47,18 @@ export function AddToCart({
       onClick={() => {
         if (!availableForSale) return;
         startTransition(async () => {
-          const error = await addItem(selectedVariantId);
+          const response = await addItem(isBigCommerceAPI, selectedProductId!, selectedVariantId);
 
-          if (error) {
-            alert(error);
+          if (typeof response !== 'string') {
+            alert(response);
             return;
           }
+
+          setCookie('cartId', response, {
+            path: '/',
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production'
+          });
 
           router.refresh();
         });

@@ -1,16 +1,16 @@
 'use server';
 
-import { addToCart, removeFromCart, updateCart } from 'lib/shopify';
+import { addToCart, removeFromCart, updateCart } from 'lib/bigcommerce';
 import { cookies } from 'next/headers';
 
-export const addItem = async (variantId: string | undefined): Promise<Error | undefined> => {
+export const addItem = async (productId: string, variantId: string | undefined): Promise<Error | undefined> => {
   const cartId = cookies().get('cartId')?.value;
 
   if (!cartId || !variantId) {
     return new Error('Missing cartId or variantId');
   }
   try {
-    await addToCart(cartId, [{ merchandiseId: variantId, quantity: 1 }]);
+    await addToCart(cartId, [{ merchandiseId: variantId, quantity: 1, productId }]);
   } catch (e) {
     return new Error('Error adding item', { cause: e });
   }
@@ -31,10 +31,12 @@ export const removeItem = async (lineId: string): Promise<Error | undefined> => 
 
 export const updateItemQuantity = async ({
   lineId,
+  productId,
   variantId,
   quantity
 }: {
   lineId: string;
+  productId: string;
   variantId: string;
   quantity: number;
 }): Promise<Error | undefined> => {
@@ -48,7 +50,8 @@ export const updateItemQuantity = async ({
       {
         id: lineId,
         merchandiseId: variantId,
-        quantity
+        quantity,
+        productId
       }
     ]);
   } catch (e) {

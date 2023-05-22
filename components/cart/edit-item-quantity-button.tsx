@@ -28,6 +28,7 @@ export default function EditItemQuantityButton({
               ? await removeItem(item.id)
               : await updateItemQuantity({
                   lineId: item.id,
+                  productId: item.merchandise.product.handle,
                   variantId: item.merchandise.id,
                   quantity: type === 'plus' ? item.quantity + 1 : item.quantity - 1
                 });
