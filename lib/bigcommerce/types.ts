@@ -492,7 +492,10 @@ export type DigitalOrPhysicalItem = {
 
 export type CartCustomItem = {
   entityId: string;
+<<<<<<< HEAD
   productEntityId: undefined;
+=======
+>>>>>>> b17652b (feat: project initial setup)
   sku: string;
   name: string;
   quantity: number;
@@ -502,7 +505,10 @@ export type CartCustomItem = {
 
 type CartGiftCertificate = {
   entityId: number;
+<<<<<<< HEAD
   productEntityId: undefined;
+=======
+>>>>>>> b17652b (feat: project initial setup)
   name: string;
   amount: BigCommerceMoney;
   isTaxable: boolean;

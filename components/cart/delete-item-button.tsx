@@ -18,7 +18,7 @@ export default function DeleteItemButton({ item }: { item: CartItem }) {
         startTransition(async () => {
           const error = await removeItem(item.id);
 
-          if (error) {
+          if (error && error?.cause) {
             alert(error);
             return;
           }

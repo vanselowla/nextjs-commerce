@@ -3,14 +3,18 @@
 import { addToCart, removeFromCart, updateCart } from 'lib/bigcommerce';
 import { cookies } from 'next/headers';
 
-export const addItem = async (productId: string, variantId: string | undefined): Promise<Error | undefined> => {
+export const addItem = async (isBigCommerceAPI: boolean, productId: string, variantId: string | undefined): Promise<Error | string > => {
   const cartId = cookies().get('cartId')?.value;
 
-  if (!cartId || !variantId) {
+  if (!isBigCommerceAPI && !cartId || !variantId) {
     return new Error('Missing cartId or variantId');
+  } else if (isBigCommerceAPI && !variantId) {
+    return new Error('Missing variantId');
   }
   try {
-    await addToCart(cartId, [{ merchandiseId: variantId, quantity: 1, productId }]);
+    const { id } = await addToCart(cartId ?? '', [{ merchandiseId: variantId, quantity: 1, productId }]);
+
+    return id; 
   } catch (e) {
     return new Error('Error adding item', { cause: e });
   }

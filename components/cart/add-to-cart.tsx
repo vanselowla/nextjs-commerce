@@ -18,7 +18,7 @@ export function AddToCart({
   variants: ProductVariant[];
   availableForSale: boolean;
 }) {
-  const productEntityId = variants[0]?.parentId;
+  const productEntityId = variants[0]?.parentId || variants[0]?.id;
   const varianEntitytId = variants[0]?.id;
   const [selectedVariantId, setSelectedVariantId] = useState(varianEntitytId);
   const [selectedProductId, setSelectedProductId] = useState(productEntityId);
