@@ -16,16 +16,9 @@ A Next.js 13 and App Router-ready headless storefront template for BigCommerce, 
 
 ## Prerequisites
 
-<<<<<<< HEAD
 Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/).
 
 To get started, use this README and the [example environment variable comments](.env.example).
-=======
-Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/). Consult the following articles in BigCommerce's DevDocs for configuration and guidance:
-
-- [Next.js + BigCommerce Configuration](https://developer.bigcommerce.com/api-docs/storefronts/nextjs-commerce)
-- [Guide to Building Headless Storefronts](https://developer.bigcommerce.com/api-docs/storefronts/guide/overview)
->>>>>>> 55f05bb (add links, resolve several notes)
 
 ## Develop locally
 
@@ -69,15 +62,10 @@ The app runs on [localhost:3000](http://localhost:3000/).
 
 ## Get to know the BigCommerce GraphQL Storefront API
 
-<<<<<<< HEAD
 In addition to being compatible with BigCommerce's multi-storefront features, Next.js + BigCommerce uses the [GraphQL Storefront API](https://developer.bigcommerce.com/api-docs/storefront/graphql/graphql-api-overview). This API makes it possible for merchants to control the representation of products and categories, carts, orders, customer segmentation, and more. To get a sense of what is possible to do directly on the storefront, check out the [GraphQL Playground](https://developer.bigcommerce.com/graphql-storefront/playground).
 
 When you access the Playground through the store control panel, BigCommerce provides a valid GraphQL Storefront authentication token without any additional API calls on your part. To access the dedicated GraphQL Playground for a particular sandbox or store, sign in to its BigCommerce account and navigate to **[Settings > API](https://login.bigcommerce.com/deep-links/manage/settings-list)**, then click **Storefront API Playground**.
 
-=======
-In addition to being compatible with BigCommerce's multi-storefront features, Next.js + BigCommerce uses the [GraphQL Storefront API](https://developer.bigcommerce.com/api-docs/storefront/graphql/graphql-api-overview). This API makes it possible for merchants to control the representation of products and categories, carts, orders, customer segmentation, and more. To get a sense of what is possible to do directly on the storefront, check out the dedicated [GraphQL Playground](https://developer.bigcommerce.com/graphql-storefront/playground) for the sandbox.
-<!-- ++++ TODO: directions on accessing the playground -->
->>>>>>> 55f05bb (add links, resolve several notes)
 ## Explore BigCommerce features
 
 BigCommerce's open SaaS feature set powers your store. Visit the BigCommerce developer documentation to learn more about your options for the following features:
@@ -94,11 +82,7 @@ Shopper journeys:
 - [GraphQL Storefront Faceted Search](https://developer.bigcommerce.com/api-docs/storefront/graphql/graphql-faceted-textual-search)
 - [Promotions](https://developer.bigcommerce.com/promotions/overview)
 - [Customer Segmentation](https://developer.bigcommerce.com/customer-segmentation/overview)
-<<<<<<< HEAD
 - [GraphQL Storefront Carts and Checkouts](https://developer.bigcommerce.com/api-docs/storefront/graphql/carts-and-checkout)
-=======
-- [GraphQL Storefront Carts and Checkouts]()
->>>>>>> 55f05bb (add links, resolve several notes)
 - [Abandoned Carts](https://developer.bigcommerce.com/docs/rest-management/abandoned-carts)
 - [Payments](https://developer.bigcommerce.com/docs/rest-payments)
 - [Tax](https://developer.bigcommerce.com/docs/rest-management/tax-settings#get-tax-settings)
@@ -108,8 +92,4 @@ Shopper journeys:
 
 ## Join our developer community
 
-<<<<<<< HEAD
 We invite you to give feedback and ask questions in our [Developer Community](https://developer.bigcommerce.com/community) BigCommerceDevs Slack or on our Discord server.
-=======
-We invite you to give feedback and ask questions in our [Developer Community](/community) BigCommerceDevs Slack or Discord server.
->>>>>>> 55f05bb (add links, resolve several notes)
