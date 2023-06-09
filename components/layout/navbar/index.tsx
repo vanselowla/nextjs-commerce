@@ -11,12 +11,11 @@ import Search from './search';
 
 export default async function Navbar() {
   const menu = await getMenu('next-js-frontend-header-menu');
-  const demoMenu = menu.slice(0, 4);
 
   return (
     <nav className="relative flex items-center justify-between bg-white p-4 dark:bg-black lg:px-6">
       <div className="block w-1/3 md:hidden">
-        <MobileMenu menu={demoMenu} />
+        <MobileMenu menu={menu} />
       </div>
       <div className="flex justify-self-center md:w-1/3 md:justify-self-start">
         <div className="md:mr-4">
@@ -24,9 +23,9 @@ export default async function Navbar() {
             <LogoIcon className="h-8 transition-transform hover:scale-110" />
           </Link>
         </div>
-        {demoMenu.length ? (
+        {menu.length ? (
           <ul className="hidden md:flex">
-            {demoMenu.map((item: Menu) => (
+            {menu.map((item: Menu) => (
               <li key={item.title}>
                 <Link
                   href={item.path}

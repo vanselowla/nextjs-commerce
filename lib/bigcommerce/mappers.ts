@@ -30,7 +30,7 @@ const vercelFromBigCommerceLineItems = (lineItems: BigCommerceCart['lineItems'])
   return [physicalItems, digitalItems, customItems].flatMap((list) => list.map(cartItemMapper));
 };
 
-const bigcommerceToVercelOptions = (options: BigCommerceProductOption[]): VercelProductOption[] => {
+const bigCommerceToVercelOptions = (options: BigCommerceProductOption[]): VercelProductOption[] => {
   return options.map((option) => {
     return {
       id: option.entityId.toString(),
@@ -39,7 +39,7 @@ const bigcommerceToVercelOptions = (options: BigCommerceProductOption[]): Vercel
     };
   });
 };
-const bigcommerceToVercelVariants = (
+const bigCommerceToVercelVariants = (
   variants: BigCommerceProductVariant[],
   productId: number
 ): VercelProductVariant[] => {
@@ -70,7 +70,7 @@ const bigcommerceToVercelVariants = (
   });
 };
 
-const bigcommerceToVercelProduct = (product: BigCommerceProduct): VercelProduct => {
+const bigCommerceToVercelProduct = (product: BigCommerceProduct): VercelProduct => {
   const createVercelProductImage = (img: { url: string; altText: string }) => {
     return {
       url: img.url,
@@ -80,10 +80,10 @@ const bigcommerceToVercelProduct = (product: BigCommerceProduct): VercelProduct 
     };
   };
   const options = product.productOptions.edges.length
-    ? bigcommerceToVercelOptions(product.productOptions.edges.map((item) => item.node))
+    ? bigCommerceToVercelOptions(product.productOptions.edges.map((item) => item.node))
     : [];
   const variants = product.variants.edges.length
-    ? bigcommerceToVercelVariants(
+    ? bigCommerceToVercelVariants(
         product.variants.edges.map((item) => item.node),
         product.entityId
       )
@@ -129,12 +129,12 @@ const bigcommerceToVercelProduct = (product: BigCommerceProduct): VercelProduct 
   };
 };
 
-const bigcommerceToVercelProducts = (products: BigCommerceProduct[]) => {
+const bigCommerceToVercelProducts = (products: BigCommerceProduct[]) => {
   const reshapedProducts = [];
 
   for (const product of products) {
     if (product) {
-      const reshapedProduct = bigcommerceToVercelProduct(product);
+      const reshapedProduct = bigCommerceToVercelProduct(product);
 
       if (reshapedProduct) {
         reshapedProducts.push(reshapedProduct);
@@ -145,7 +145,7 @@ const bigcommerceToVercelProducts = (products: BigCommerceProduct[]) => {
   return reshapedProducts;
 };
 
-const bigcommerceToVercelCartItems = (
+const bigCommerceToVercelCartItems = (
   lineItems: BigCommerceCart['lineItems'],
   products: ProductsList
 ) => {
@@ -193,7 +193,7 @@ const bigcommerceToVercelCartItems = (
           ({ productId }) => productId === (item as DigitalOrPhysicalItem).productEntityId
         )[0]?.productData;
 
-        product = productData ? bigcommerceToVercelProduct(productData) : vercelProductFallback;
+        product = productData ? bigCommerceToVercelProduct(productData) : vercelProductFallback;
         selectedOptions = (item as DigitalOrPhysicalItem).selectedOptions.map((option) => ({
           name: option.name,
           value: option.value || option.text || option.number?.toString() || option.fileName || ''
@@ -231,7 +231,7 @@ const bigcommerceToVercelCartItems = (
   return [...line1, ...line2, ...line3];
 };
 
-const bigcommerceToVercelCart = (
+const bigCommerceToVercelCart = (
   cart: BigCommerceCart,
   products: ProductsList,
   checkout: BigCommerceCheckout,
@@ -254,7 +254,7 @@ const bigcommerceToVercelCart = (
         currencyCode: checkout.taxTotal.currencyCode
       }
     },
-    lines: bigcommerceToVercelCartItems(cart.lineItems, products),
+    lines: bigCommerceToVercelCartItems(cart.lineItems, products),
     totalQuantity: cart.lineItems.totalQuantity
   };
 };
@@ -288,9 +288,9 @@ const bigCommerceToVercelCollection = (collection: BigCommerceCollection): Verce
 };
 
 export {
-  bigcommerceToVercelCart,
-  bigcommerceToVercelProduct,
-  bigcommerceToVercelProducts,
+  bigCommerceToVercelCart,
+  bigCommerceToVercelProduct,
+  bigCommerceToVercelProducts,
   bigCommerceToVercelCollection,
   vercelFromBigCommerceLineItems
 };

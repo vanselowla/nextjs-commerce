@@ -1,11 +1,11 @@
 import { isVercelCommerceError } from 'lib/type-guards';
 import { BIGCOMMERCE_GRAPHQL_API_ENDPOINT } from './constants';
 import {
+  bigCommerceToVercelCart,
   bigCommerceToVercelCollection,
   bigCommerceToVercelPageContent,
-  bigcommerceToVercelCart,
-  bigcommerceToVercelProduct,
-  bigcommerceToVercelProducts,
+  bigCommerceToVercelProduct,
+  bigCommerceToVercelProducts,
   vercelFromBigCommerceLineItems,
   vercelToBigCommerceSorting
 } from './mappers';
@@ -26,6 +26,7 @@ import {
   getProductQuery,
   getProductsCollectionQuery,
   getProductsRecommedationsQuery,
+  getStoreProductsQuery,
   searchProductsQuery
 } from './queries/product';
 import { getEntityIdByRouteQuery } from './queries/route';
@@ -46,8 +47,10 @@ import {
   BigCommerceNewestProductsOperation,
   BigCommercePageOperation,
   BigCommercePagesOperation,
+  BigCommerceProduct,
   BigCommerceProductOperation,
   BigCommerceProductsCollectionOperation,
+  BigCommerceProductsOperation,
   BigCommerceRecommendationsOperation,
   BigCommerceSearchProductsOperation,
   BigCommerceUpdateCartItemOperation,
@@ -68,7 +71,7 @@ const endpoint = `${domain}.${BIGCOMMERCE_GRAPHQL_API_ENDPOINT}`;
 type ExtractVariables<T> = T extends { variables: object } ? T['variables'] : never;
 
 const getEntityIdByHandle = async (entityHandle: string) => {
-  const res = await bigcommerceFetch<BigCommerceEntityIdOperation>({
+  const res = await bigCommerceFetch<BigCommerceEntityIdOperation>({
     query: getEntityIdByRouteQuery,
     variables: {
       path: `/${entityHandle}`
@@ -78,7 +81,7 @@ const getEntityIdByHandle = async (entityHandle: string) => {
   return res.body.data.site.route.node.entityId;
 };
 
-export async function bigcommerceFetch<T>({
+export async function bigCommerceFetch<T>({
   query,
   variables,
   headers,
@@ -137,7 +140,7 @@ export async function bigcommerceFetch<T>({
 }
 
 const getCategoryEntityIdbyHandle = async (handle: string) => {
-  const resp = await bigcommerceFetch<BigCommerceMenuOperation>({
+  const resp = await bigCommerceFetch<BigCommerceMenuOperation>({
     query: getMenuQuery
   });
   const recursiveFindCollectionId = (list: BigCommerceCategoryTreeItem[], slug: string): number => {
@@ -163,28 +166,31 @@ const getCategoryEntityIdbyHandle = async (handle: string) => {
 
 const getBigCommerceProductsWithCheckout = async (
   cartId: string,
-  lines: { merchandiseId: string; quantity: number }[]
+  lines: { merchandiseId: string; quantity: number, productId?: string }[]
 ) => {
-  const bigCommerceProducts = await Promise.all(
-    lines.map(async ({ merchandiseId }) => {
-      const productId = parseInt(merchandiseId, 10);
+  const productIds = lines.map(({merchandiseId, productId}) => parseInt(productId ?? merchandiseId, 10));
+  const bigCommerceProductListRes = await bigCommerceFetch<BigCommerceProductsOperation>({
+    query: getStoreProductsQuery,
+    variables: {
+      entityIds: productIds
+    },
+    cache: 'no-store'
+  });
+  const bigCommerceProductList = bigCommerceProductListRes.body.data.site.products.edges.map((product) => product.node);
 
-      const resp = await bigcommerceFetch<BigCommerceProductOperation>({
-        query: getProductQuery,
-        variables: {
-          productId
-        },
-        cache: 'no-store'
-      });
+  const createProductList = (idList: number[], products: BigCommerceProduct[]) => {
+    return idList.map((productId) => {
+      const productData = products.find(({entityId}) => entityId === productId)!;
 
       return {
         productId,
-        productData: resp.body.data.site.product
+        productData
       };
-    })
-  );
+    });
+  };
+  const bigCommerceProducts = createProductList(productIds, bigCommerceProductList);
 
-  const resCheckout = await bigcommerceFetch<BigCommerceCheckoutOperation>({
+  const resCheckout = await bigCommerceFetch<BigCommerceCheckoutOperation>({
     query: getCheckoutQuery,
     variables: {
       entityId: cartId
@@ -248,7 +254,7 @@ export async function addToCart(
   let bigCommerceCart: BigCommerceCart;
 
   if (cartId) {
-    const res = await bigcommerceFetch<BigCommerceAddToCartOperation>({
+    const res = await bigCommerceFetch<BigCommerceAddToCartOperation>({
       query: addCartLineItemMutation,
       variables: {
         addCartLineItemsInput: {
@@ -267,7 +273,7 @@ export async function addToCart(
 
     bigCommerceCart = res.body.data.cart.addCartLineItems.cart;
   } else {
-    const res = await bigcommerceFetch<BigCommerceCreateCartOperation>({
+    const res = await bigCommerceFetch<BigCommerceCreateCartOperation>({
       query: createCartMutation,
       variables: {
         createCartInput: {
@@ -289,38 +295,46 @@ export async function addToCart(
     lines
   );
 
-  return bigcommerceToVercelCart(bigCommerceCart, productsByIdList, checkout, checkoutUrl);
+  return bigCommerceToVercelCart(bigCommerceCart, productsByIdList, checkout, checkoutUrl);
 }
 
 export async function removeFromCart(cartId: string, lineIds: string[]): Promise<VercelCart> {
   let cartState: { status: number; body: BigCommerceDeleteCartItemOperation };
-
-  for (let removals = lineIds.length; removals > 0; removals--) {
-    const lineId = lineIds[removals - 1]!;
-
-    const res = await bigcommerceFetch<BigCommerceDeleteCartItemOperation>({
+  const removeCartItem = async (itemId: string) => {
+    const res = await bigCommerceFetch<BigCommerceDeleteCartItemOperation>({
       query: deleteCartLineItemMutation,
       variables: {
         deleteCartLineItemInput: {
           cartEntityId: cartId,
-          lineItemEntityId: lineId
+          lineItemEntityId: itemId
         }
       },
       cache: 'no-store'
     });
 
-    cartState = res;
+    return res;
+  };
+
+   if (lineIds.length === 1) {
+    cartState = await removeCartItem(lineIds[0]!);
+   } else if (lineIds.length > 1) {
+    // NOTE: can it happen at all??
+    let operations = lineIds.length;
+
+    while (operations > 0) {
+      operations--;
+      cartState = await removeCartItem(lineIds[operations]!);
+    }
   }
 
   const cart = cartState!.body.data.cart.deleteCartLineItem.cart;
   const lines = vercelFromBigCommerceLineItems(cart.lineItems);
   const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(cartId, lines);
 
-  return bigcommerceToVercelCart(cart, productsByIdList, checkout, checkoutUrl);
+  return bigCommerceToVercelCart(cart, productsByIdList, checkout, checkoutUrl);
 }
 
-// NOTE: looks like we can update only product-level update.
-// Update on selected options requires variantEntityId, optionEntityId
+// NOTE: update happens on product & variant levels w/t optionEntityId
 export async function updateCart(
   cartId: string,
   lines: { id: string; merchandiseId: string; quantity: number; productId?: string }[]
@@ -329,7 +343,7 @@ export async function updateCart(
 
   for (let updates = lines.length; updates > 0; updates--) {
     const { id, merchandiseId, quantity, productId } = lines[updates - 1]!;
-    const res = await bigcommerceFetch<BigCommerceUpdateCartItemOperation>({
+    const res = await bigCommerceFetch<BigCommerceUpdateCartItemOperation>({
       query: updateCartLineItemMutation,
       variables: {
         updateCartLineItemInput: {
@@ -353,11 +367,11 @@ export async function updateCart(
   const updatedCart = cartState!.body.data.cart.updateCartLineItem.cart;
   const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(cartId, lines);
 
-  return bigcommerceToVercelCart(updatedCart, productsByIdList, checkout, checkoutUrl);
+  return bigCommerceToVercelCart(updatedCart, productsByIdList, checkout, checkoutUrl);
 }
 
 export async function getCart(cartId: string): Promise<VercelCart | null> {
-  const res = await bigcommerceFetch<BigCommerceCartOperation>({
+  const res = await bigCommerceFetch<BigCommerceCartOperation>({
     query: getCartQuery,
     variables: { entityId: cartId },
     cache: 'no-store'
@@ -371,12 +385,12 @@ export async function getCart(cartId: string): Promise<VercelCart | null> {
   const lines = vercelFromBigCommerceLineItems(cart.lineItems);
   const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(cartId, lines);
 
-  return bigcommerceToVercelCart(cart, productsByIdList, checkout, checkoutUrl);
+  return bigCommerceToVercelCart(cart, productsByIdList, checkout, checkoutUrl);
 }
 
 export async function getCollection(handle: string): Promise<VercelCollection> {
   const entityId = await getCategoryEntityIdbyHandle(handle);
-  const res = await bigcommerceFetch<BigCommerceCollectionOperation>({
+  const res = await bigCommerceFetch<BigCommerceCollectionOperation>({
     query: getCategoryQuery,
     variables: {
       entityId
@@ -401,7 +415,7 @@ export async function getCollectionProducts({
   };
 
   if (expectedCollectionBreakpoints[collection] === 'carousel_collection') {
-    const res = await bigcommerceFetch<BigCommerceNewestProductsOperation>({
+    const res = await bigCommerceFetch<BigCommerceNewestProductsOperation>({
       query: getNewestProductsQuery,
       variables: {
         first: 10
@@ -414,11 +428,11 @@ export async function getCollectionProducts({
     }
     const productList = res.body.data.site.newestProducts.edges.map((item) => item.node);
 
-    return bigcommerceToVercelProducts(productList);
+    return bigCommerceToVercelProducts(productList);
   }
 
   if (expectedCollectionBreakpoints[collection] === 'featured_collection') {
-    const res = await bigcommerceFetch<BigCommerceFeaturedProductsOperation>({
+    const res = await bigCommerceFetch<BigCommerceFeaturedProductsOperation>({
       query: getFeaturedProductsQuery,
       variables: {
         first: 10
@@ -431,12 +445,12 @@ export async function getCollectionProducts({
     }
     const productList = res.body.data.site.featuredProducts.edges.map((item) => item.node);
 
-    return bigcommerceToVercelProducts(productList);
+    return bigCommerceToVercelProducts(productList);
   }
 
   const entityId = await getCategoryEntityIdbyHandle(collection);
   const sortBy = vercelToBigCommerceSorting(reverse ?? false, sortKey);
-  const res = await bigcommerceFetch<BigCommerceProductsCollectionOperation>({
+  const res = await bigCommerceFetch<BigCommerceProductsCollectionOperation>({
     query: getProductsCollectionQuery,
     variables: {
       entityId,
@@ -452,18 +466,17 @@ export async function getCollectionProducts({
   }
   const productList = res.body.data.site.category.products.edges.map((item) => item.node);
 
-  return bigcommerceToVercelProducts(productList);
+  return bigCommerceToVercelProducts(productList);
 }
 
 export async function getCollections(): Promise<VercelCollection[]> {
-  const res = await bigcommerceFetch<BigCommerceCollectionsOperation>({
+  const res = await bigCommerceFetch<BigCommerceCollectionsOperation>({
     query: getStoreCategoriesQuery
   });
   const collectionIdList = res.body.data.site.categoryTree.map(({ entityId }) => entityId);
-
   const collections = await Promise.all(
     collectionIdList.map(async (entityId) => {
-      const res = await bigcommerceFetch<BigCommerceCollectionOperation>({
+      const res = await bigCommerceFetch<BigCommerceCollectionOperation>({
         query: getCategoryQuery,
         variables: {
           entityId
@@ -477,11 +490,6 @@ export async function getCollections(): Promise<VercelCollection[]> {
 }
 
 export async function getMenu(handle: string): Promise<VercelMenu[]> {
-  const expectedMenyType = 'footerOrHeader';
-  const handleToSlug: Record<string, string> = {
-    'next-js-frontend-footer-menu': expectedMenyType,
-    'next-js-frontend-header-menu': expectedMenyType
-  };
   const configureMenuPath = (path: string) =>
     path
       .split('/')
@@ -507,14 +515,14 @@ export async function getMenu(handle: string): Promise<VercelMenu[]> {
         // }
 
         return [vercelMenuItem];
-      });
+      }).slice(0, 4);
     }
 
     return [];
   };
 
-  if (handleToSlug[handle] === expectedMenyType) {
-    const res = await bigcommerceFetch<BigCommerceMenuOperation>({
+  if (handle === 'next-js-frontend-footer-menu' || handle === 'next-js-frontend-header-menu') {
+    const res = await bigCommerceFetch<BigCommerceMenuOperation>({
       query: getMenuQuery
     });
 
@@ -526,7 +534,7 @@ export async function getMenu(handle: string): Promise<VercelMenu[]> {
 
 export async function getPage(handle: string): Promise<VercelPage> {
   const entityId = await getEntityIdByHandle(handle);
-  const res = await bigcommerceFetch<BigCommercePageOperation>({
+  const res = await bigCommerceFetch<BigCommercePageOperation>({
     query: getPageQuery,
     variables: {
       entityId
@@ -537,7 +545,7 @@ export async function getPage(handle: string): Promise<VercelPage> {
 }
 
 export async function getPages(): Promise<VercelPage[]> {
-  const res = await bigcommerceFetch<BigCommercePagesOperation>({
+  const res = await bigCommerceFetch<BigCommercePagesOperation>({
     query: getPagesQuery
   });
 
@@ -547,18 +555,18 @@ export async function getPages(): Promise<VercelPage[]> {
 }
 
 export async function getProduct(handle: string): Promise<VercelProduct | undefined> {
-  const res = await bigcommerceFetch<BigCommerceProductOperation>({
+  const res = await bigCommerceFetch<BigCommerceProductOperation>({
     query: getProductQuery,
     variables: {
       productId: parseInt(handle, 10)
     }
   });
 
-  return bigcommerceToVercelProduct(res.body.data.site.product);
+  return bigCommerceToVercelProduct(res.body.data.site.product);
 }
 
 export async function getProductRecommendations(productId: string): Promise<VercelProduct[]> {
-  const res = await bigcommerceFetch<BigCommerceRecommendationsOperation>({
+  const res = await bigCommerceFetch<BigCommerceRecommendationsOperation>({
     query: getProductsRecommedationsQuery,
     variables: {
       productId: productId
@@ -567,7 +575,7 @@ export async function getProductRecommendations(productId: string): Promise<Verc
 
   const productList = res.body.data.site.product.relatedProducts.edges.map((item) => item.node);
 
-  return bigcommerceToVercelProducts(productList);
+  return bigCommerceToVercelProducts(productList);
 }
 
 export async function getProducts({
@@ -580,7 +588,7 @@ export async function getProducts({
   sortKey?: string;
 }): Promise<VercelProduct[]> {
   const sort = vercelToBigCommerceSorting(reverse ?? false, sortKey);
-  const res = await bigcommerceFetch<BigCommerceSearchProductsOperation>({
+  const res = await bigCommerceFetch<BigCommerceSearchProductsOperation>({
     query: searchProductsQuery,
     variables: {
       filters: {
@@ -594,5 +602,5 @@ export async function getProducts({
     (item) => item.node
   );
 
-  return bigcommerceToVercelProducts(productList);
+  return bigCommerceToVercelProducts(productList);
 }
