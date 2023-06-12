@@ -11,6 +11,21 @@ export const getProductQuery = /* GraphQL */ `
   ${productFragment}
 `;
 
+export const getStoreProductsQuery = /* GraphQL */ `
+  query getStoreProducts($entityIds: [Int!]) {
+    site {
+      products(entityIds: $entityIds) {
+        edges {
+          node {
+            ...product
+          }
+        }
+      }
+    }
+  }
+  ${productFragment}
+`;
+
 export const getProductsCollectionQuery = /* GraphQL */ `
   query getProductsCollection(
     $entityId: Int!
@@ -25,21 +40,6 @@ export const getProductsCollectionQuery = /* GraphQL */ `
             node {
               ...product
             }
-          }
-        }
-      }
-    }
-  }
-  ${productFragment}
-`;
-
-export const getStoreProductsQuery = /* GraphQL */ `
-  query getStoreProducts($first: Int, $entityIds: [number!]) {
-    site {
-      products(first: $first, entityIds: $entityIds) {
-        edges {
-          node {
-            ...product
           }
         }
       }
