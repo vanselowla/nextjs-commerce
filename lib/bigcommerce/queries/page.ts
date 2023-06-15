@@ -25,6 +25,28 @@ export const getPageQuery = /* GraphQL */ `
             path
           }
         }
+        # TODO: use it later on
+        # blog {
+        #   name
+        #   path
+        #   description
+        #   isVisibleInNavigation
+        #   posts {
+        #     edges {
+        #       node {
+        #         name
+        #         path
+        #         plainTextSummary
+        #         publishedDate {
+        #           utc
+        #         }
+        #         author
+        #         htmlBody
+        #         entityId
+        #       }
+        #     }
+        #   }
+        # }
       }
     }
   }

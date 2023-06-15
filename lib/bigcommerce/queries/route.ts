@@ -14,15 +14,20 @@ export const getEntityIdByRouteQuery = /* GraphQL */ `
             entityId
           }
           #  NOTE: this API is still not public
-          #   ... on NormalPage {
-          #     entityId
-          #   }
-          #   ... on ContactPage {
-          #     entityId
-          #   }
-          #   ... on RawHtmlPage {
-          #     entityId
-          #   }
+          ... on NormalPage {
+            entityId
+          }
+          ... on ContactPage {
+            entityId
+          }
+          ... on RawHtmlPage {
+            entityId
+          }
+          # TODO: use it later on
+          # ... on Blog {
+          #   name
+          #   id
+          # }
         }
       }
     }

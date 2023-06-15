@@ -442,6 +442,7 @@ export type BigCommercePage = {
   __typename: 'NormalPage' | 'ContactPage' | 'RawHtmlPage' | 'BlogIndexPage';
   entityId: number;
   name: string;
+  isVisibleInNavigation: boolean;
   seo: BigCommerceSEO;
   path: string;
   plainTextSummary?: string;
