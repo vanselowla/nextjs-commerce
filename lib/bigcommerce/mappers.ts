@@ -323,7 +323,7 @@ export const bigCommerceToVercelPageContent = (page: BigCommercePage): VercelPag
   return {
     id: page.entityId.toString(),
     title: page.name,
-    handle: page.path,
+    handle: page.path.slice(1),
     body: page.htmlBody ?? '',
     bodySummary: page.plainTextSummary ?? '',
     seo: {
