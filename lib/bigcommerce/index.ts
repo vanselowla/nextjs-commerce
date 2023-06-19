@@ -45,6 +45,7 @@ import {
   BigCommerceFeaturedProductsOperation,
   BigCommerceMenuOperation,
   BigCommerceNewestProductsOperation,
+  BigCommercePage,
   BigCommercePageOperation,
   BigCommercePagesOperation,
   BigCommerceProduct,
@@ -495,38 +496,66 @@ export async function getMenu(handle: string): Promise<VercelMenu[]> {
       .split('/')
       .filter((item) => item.length)
       .pop();
-  const createVercelCollectionPath = (title: string) => `/search/${title}`;
+  const createVercelCollectionPath = (title: string, menuType: 'footer' | 'header') => menuType === 'header' ? `/search/${title}`: `/${title}`;
   const configureVercelMenu = (
-    menuData: BigCommerceCategoryTreeItem[],
-    isMenuData: boolean
+    menuData: BigCommerceCategoryTreeItem[] | BigCommercePage[],
+    isMenuData: boolean,
+    menuType?: 'footer' | 'header',
   ): VercelMenu[] => {
     if (isMenuData) {
       return menuData.flatMap((item) => {
-        const { name, path, hasChildren, children } = item;
-        const verceLTitle = configureMenuPath(path);
+        let vercelMenuItem;
 
-        const vercelMenuItem = {
-          title: name,
-          path: createVercelCollectionPath(verceLTitle!)
-        };
-        // NOTE: keep only high level categories for NavBar
+        if (menuType === 'header') {
+          const { name, path, hasChildren, children } = item as BigCommerceCategoryTreeItem;
+          const vercelTitle = configureMenuPath(path);
+          // NOTE: keep only high level categories for NavBar
         // if (hasChildren && children) {
         //   return configureVercelMenu(children, hasChildren);
         // }
 
-        return [vercelMenuItem];
+          vercelMenuItem = {
+            title: name,
+            path: createVercelCollectionPath(vercelTitle!, menuType ?? 'header' )
+          };
+
+          return [vercelMenuItem];
+        }
+
+        if (menuType === 'footer') {
+          const { isVisibleInNavigation, name, path } = item as BigCommercePage;
+          const vercelTitle = configureMenuPath(path);
+
+          vercelMenuItem = {
+            title: name,
+            path: createVercelCollectionPath(vercelTitle!, menuType ?? 'footer' )
+          };
+          // NOTE: blog has different structure & separate mapper
+          return vercelMenuItem.title === 'Blog' || !isVisibleInNavigation ? [] : [vercelMenuItem];
+        }
+
+        return [];
       }).slice(0, 4);
     }
 
     return [];
   };
 
-  if (handle === 'next-js-frontend-footer-menu' || handle === 'next-js-frontend-header-menu') {
+  if(handle === 'next-js-frontend-footer-menu') {
+    const res = await bigCommerceFetch<BigCommercePagesOperation>({
+      query: getPagesQuery
+    });
+    const webPages = res.body.data.site.content.pages.edges.map((item) => item.node);
+
+    return configureVercelMenu(webPages, true, 'footer');
+  }
+
+  if(handle === 'next-js-frontend-header-menu') {
     const res = await bigCommerceFetch<BigCommerceMenuOperation>({
       query: getMenuQuery
     });
 
-    return configureVercelMenu(res.body.data.site.categoryTree, true);
+    return configureVercelMenu(res.body.data.site.categoryTree, true, 'header');
   }
 
   return [];
