@@ -20,6 +20,7 @@ Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcomm
 
 - [Next.js + BigCommerce Configuration](https://developer.bigcommerce.com/api-docs/storefronts/nextjs-commerce)
 - [Guide to Building Headless Storefronts](https://developer.bigcommerce.com/api-docs/storefronts/guide/overview)
+- [How to generate Customer Impersonation Token](https://developer.bigcommerce.com/docs/storefront-auth/tokens/customer-impersonation-token)
 
 ## Develop locally
 

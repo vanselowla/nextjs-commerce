@@ -30,7 +30,7 @@ import {
   searchProductsQuery
 } from './queries/product';
 import { getEntityIdByRouteQuery } from './queries/route';
-import { fetchStorefrontToken, memoizedCartRedirectUrl } from './storefront-config';
+import { memoizedCartRedirectUrl } from './storefront-config';
 import {
   BigCommerceAddToCartOperation,
   BigCommerceCart,
@@ -94,15 +94,11 @@ export async function bigCommerceFetch<T>({
   cache?: RequestCache;
 }): Promise<{ status: number; body: T } | never> {
   try {
-    const {
-      data: { token }
-    } = await fetchStorefrontToken();
-
     const result = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Accept: 'application/json',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${process.env.BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN}`,
         'Content-Type': 'application/json',
         ...headers
       },
@@ -111,7 +107,6 @@ export async function bigCommerceFetch<T>({
         ...(variables && { variables })
       }),
       cache,
-      next: { revalidate: 900 } // 15 minutes
     });
 
     const body = await result.json();
