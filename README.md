@@ -16,11 +16,9 @@ A Next.js 13 and App Router-ready headless storefront template for BigCommerce, 
 
 ## Prerequisites
 
-Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/). Consult the following articles in BigCommerce's DevDocs for configuration and guidance:
+Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/).
 
-- [Next.js + BigCommerce Configuration](https://developer.bigcommerce.com/api-docs/storefronts/nextjs-commerce)
-- [Guide to Building Headless Storefronts](https://developer.bigcommerce.com/api-docs/storefronts/guide/overview)
-- [How to generate Customer Impersonation Token](https://developer.bigcommerce.com/docs/storefront-auth/tokens/customer-impersonation-token)
+To get started, use this README and the [example environment variable comments](.env.example).
 
 ## Develop locally
 
