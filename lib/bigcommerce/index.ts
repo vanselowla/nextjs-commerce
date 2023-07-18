@@ -333,12 +333,14 @@ export async function removeFromCart(cartId: string, lineIds: string[]): Promise
 // NOTE: update happens on product & variant levels w/t optionEntityId
 export async function updateCart(
   cartId: string,
-  lines: { id: string; merchandiseId: string; quantity: number; productId?: string }[]
+  lines: { id: string; merchandiseId: string; quantity: number; productSlug?: string }[]
 ): Promise<VercelCart> {
   let cartState: { status: number; body: BigCommerceUpdateCartItemOperation } | undefined;
 
   for (let updates = lines.length; updates > 0; updates--) {
-    const { id, merchandiseId, quantity, productId } = lines[updates - 1]!;
+    const { id, merchandiseId, quantity, productSlug } = lines[updates - 1]!;
+    const productEntityId = (await getProductIdBySlug(productSlug!))?.entityId!;
+
     const res = await bigCommerceFetch<BigCommerceUpdateCartItemOperation>({
       query: updateCartLineItemMutation,
       variables: {
@@ -347,8 +349,8 @@ export async function updateCart(
           lineItemEntityId: id,
           data: {
             lineItem: {
-              productEntityId: parseInt(productId!, 10),
               variantEntityId: parseInt(merchandiseId, 10),
+              productEntityId,
               quantity
             }
           }
@@ -587,6 +589,23 @@ export async function getProduct(handle: string): Promise<VercelProduct | undefi
   });
 
   return bigCommerceToVercelProduct(res.body.data.site.product);
+}
+
+export async function getProductIdBySlug(path: string): Promise<{__typename: 'Product'
+| 'Category'
+| 'Brand'
+| 'NormalPage'
+| 'ContactPage'
+| 'RawHtmlPage'
+| 'BlogIndexPage', entityId: number} | undefined> {
+  const res = await bigCommerceFetch<BigCommerceEntityIdOperation>({
+    query: getEntityIdByRouteQuery,
+    variables: {
+      path,
+    }
+  });
+
+  return res.body.data.site.route.node;
 }
 
 export async function getProductRecommendations(productId: string): Promise<VercelProduct[]> {

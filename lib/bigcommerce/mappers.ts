@@ -91,7 +91,7 @@ const bigCommerceToVercelProduct = (product: BigCommerceProduct): VercelProduct 
 
   return {
     id: product.id.toString(),
-    handle: product.entityId.toString(),
+    handle: product.path,
     availableForSale: product.availabilityV2.status === 'Available' ? true : false,
     title: product.name,
     description: product.plainTextDescription || '',

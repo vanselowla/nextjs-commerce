@@ -131,6 +131,7 @@ const productFragment = /* GraphQL */ `
       metaDescription
       metaKeywords
     }
+    path
     prices {
       price {
         ...MoneyFields
@@ -174,4 +175,5 @@ const productFragment = /* GraphQL */ `
   ${productVariantFragment}
 `;
 
-export { productOptionFragment, productVariantFragment, productFragment };
+export { productFragment, productOptionFragment, productVariantFragment };
+

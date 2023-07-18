@@ -590,6 +590,7 @@ export type BigCommerceProduct = {
     }>;
   };
   seo: BigCommerceSEO;
+  path: string;
   prices: {
     price: BigCommerceMoney;
     priceRange: {
