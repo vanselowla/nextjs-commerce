@@ -25,7 +25,6 @@ export const getPageQuery = /* GraphQL */ `
             path
           }
         }
-<<<<<<< HEAD
         # TODO: use it later on
         # blog {
         #   name
@@ -48,8 +47,6 @@ export const getPageQuery = /* GraphQL */ `
         #     }
         #   }
         # }
-=======
->>>>>>> ca8c2b3 (rebase vercel commerce)
       }
     }
   }

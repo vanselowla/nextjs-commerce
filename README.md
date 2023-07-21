@@ -1,6 +1,6 @@
 # Next.js + BigCommerce
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-title=Next.js%20Commerce&demo-description=An%20all-in-one%20starter%20kit%20for%20high-performance%20e-commerce%20sites.&demo-url=https%3A%2F%2Fnext-commerce-v2.vercel.app%2F&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1RzhtOHEvW7xyn9qAsdr5E%2F783c7bbd498d0f3b752637d2efa0bb6e%2FNew_Project__5_.png&project-name=Next.js%20Commerce&repository-name=nextjs-commerce&repository-url=https://github.com/bigcommerce/nextjs-commerce&from=templates&env=BIGCOMMERCE_ACCESS_TOKEN%2CBIGCOMMERCE_CHANNEL_ID%2CBIGCOMMERCE_STORE_HASH%2CBIGCOMMERCE_CANONICAL_STORE_DOMAIN%2CBIGCOMMERCE_API_URL%2CBIGCOMMERCE_CDN_HOSTNAME&envDescription=These%20values%20allow%20you%20to%20connect%20to%20your%20headless%20BigCommmerce%20store.)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?demo-title=Next.js%20%2B%20BigCommerce&demo-description=An%20all-in-one%20starter%20kit%20for%20high-performance%20BigCommerce%20storefronts.&demo-url=https%3A%2F%2Fnext-commerce-v2.vercel.app%2F&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F1RzhtOHEvW7xyn9qAsdr5E%2F783c7bbd498d0f3b752637d2efa0bb6e%2FNew_Project__5_.png&project-name=Next.js%20%2B%20BigCommerce&repository-name=nextjs-commerce&repository-url=https://github.com/bigcommerce/nextjs-commerce&from=templates&env=TWITTER_CREATOR%2CTWITTER_SITE%2CSITE_NAME%2CBIGCOMMERCE_ACCESS_TOKEN%2CBIGCOMMERCE_CHANNEL_ID%2CBIGCOMMERCE_STORE_HASH%2CBIGCOMMERCE_CANONICAL_STORE_DOMAIN%2CBIGCOMMERCE_API_URL%2CBIGCOMMERCE_CDN_HOSTNAME%2CBIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN&envDescription=These%20values%20let%20you%20connect%20to%20your%20headless%20BigCommmerce%20storefront.&envLink=https%3A%2F%2Fgithub.com%2Fbigcommerce%2Fnextjs-commerce%2Fblob%2Fmain%2F.env.example)
 
 A Next.js 13 and App Router-ready headless storefront template for BigCommerce, featuring:
 
@@ -16,11 +16,9 @@ A Next.js 13 and App Router-ready headless storefront template for BigCommerce, 
 
 ## Prerequisites
 
-Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/). Consult the following articles in BigCommerce's DevDocs for configuration and guidance:
+Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/).
 
-- [Next.js + BigCommerce Configuration](https://developer.bigcommerce.com/api-docs/storefronts/nextjs-commerce)
-- [Guide to Building Headless Storefronts](https://developer.bigcommerce.com/api-docs/storefronts/guide/overview)
-- [How to generate Customer Impersonation Token](https://developer.bigcommerce.com/docs/storefront-auth/tokens/customer-impersonation-token)
+To get started, use this README and the [example environment variable comments](.env.example).
 
 ## Develop locally
 
