@@ -1,11 +1,15 @@
 'use client';
 
 import clsx from 'clsx';
+import { addItem } from 'components/cart/actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 
 import LoadingDots from 'components/loading-dots';
 import { VercelProductVariant as ProductVariant } from 'lib/bigcommerce/types';
+import { useCookies } from 'react-cookie';
+
+const isBigCommerceAPI = true;
 
 export function AddToCart({
   variants,
@@ -18,10 +22,10 @@ export function AddToCart({
   const varianEntitytId = variants[0]?.id;
   const [selectedVariantId, setSelectedVariantId] = useState(varianEntitytId);
   const [selectedProductId, setSelectedProductId] = useState(productEntityId);
+  const [,setCookie] = useCookies(['cartId']);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
-  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     const variant = variants.find((variant: ProductVariant) =>
@@ -36,51 +40,39 @@ export function AddToCart({
     }
   }, [searchParams, variants, setSelectedVariantId]);
 
-  const isMutating = adding || isPending;
-
-  async function handleAdd() {
-    if (!availableForSale) return;
-
-    setAdding(true);
-
-    const response = await fetch(`/api/cart`, {
-      method: 'POST',
-      body: JSON.stringify({
-        merchandiseId: selectedVariantId,
-        productId: selectedProductId,
-        isBigCommerceAPI: true
-      })
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-
-    setAdding(false);
-
-    startTransition(() => {
-      router.refresh();
-    });
-  }
-
   return (
     <button
       aria-label="Add item to cart"
-      disabled={isMutating}
-      onClick={handleAdd}
+      disabled={isPending}
+      onClick={() => {
+        if (!availableForSale) return;
+        startTransition(async () => {
+          const response = await addItem(isBigCommerceAPI, selectedProductId!, selectedVariantId);
+
+          if (typeof response !== 'string') {
+            alert(response);
+            return;
+          }
+
+          setCookie('cartId', response, {
+            path: '/',
+            sameSite: 'strict',
+            secure: process.env.NODE_ENV === 'production'
+          });
+
+          router.refresh();
+        });
+      }}
       className={clsx(
         'flex w-full items-center justify-center bg-black p-4 text-sm uppercase tracking-wide text-white opacity-90 hover:opacity-100 dark:bg-white dark:text-black',
         {
           'cursor-not-allowed opacity-60': !availableForSale,
-          'cursor-not-allowed': isMutating
+          'cursor-not-allowed': isPending
         }
       )}
     >
       <span>{availableForSale ? 'Add To Cart' : 'Out Of Stock'}</span>
-      {isMutating ? <LoadingDots className="bg-white dark:bg-black" /> : null}
+      {isPending ? <LoadingDots className="bg-white dark:bg-black" /> : null}
     </button>
   );
 }

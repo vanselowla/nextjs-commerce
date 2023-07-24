@@ -143,9 +143,7 @@ const deleteCartMutation = /* GraphQL */ `
 `;
 
 export {
-  createCartMutation,
-  addCartLineItemMutation,
-  updateCartLineItemMutation,
-  deleteCartLineItemMutation,
-  deleteCartMutation
+  addCartLineItemMutation, createCartMutation, deleteCartLineItemMutation,
+  deleteCartMutation, updateCartLineItemMutation
 };
+
