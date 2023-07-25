@@ -35,12 +35,12 @@ export const removeItem = async (lineId: string): Promise<Error | undefined> => 
 
 export const updateItemQuantity = async ({
   lineId,
-  productId,
+  productSlug,
   variantId,
   quantity
 }: {
   lineId: string;
-  productId: string;
+  productSlug: string;
   variantId: string;
   quantity: number;
 }): Promise<Error | undefined> => {
@@ -55,7 +55,7 @@ export const updateItemQuantity = async ({
         id: lineId,
         merchandiseId: variantId,
         quantity,
-        productId
+        productSlug
       }
     ]);
   } catch (e) {
