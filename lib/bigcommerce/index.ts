@@ -1,5 +1,10 @@
 import { isVercelCommerceError } from 'lib/type-guards';
+import { revalidateTag } from 'next/cache';
+import { headers } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 import { BIGCOMMERCE_GRAPHQL_API_ENDPOINT } from './constants';
+import { TAGS } from 'lib/constants';
+
 import {
   bigCommerceToVercelCart,
   bigCommerceToVercelCollection,
@@ -106,7 +111,7 @@ export async function bigCommerceFetch<T>({
         ...(query && { query }),
         ...(variables && { variables })
       }),
-      cache,
+      cache
     });
 
     const body = await result.json();
@@ -162,9 +167,11 @@ const getCategoryEntityIdbyHandle = async (handle: string) => {
 
 const getBigCommerceProductsWithCheckout = async (
   cartId: string,
-  lines: { merchandiseId: string; quantity: number, productId?: string }[]
+  lines: { merchandiseId: string; quantity: number; productId?: string }[]
 ) => {
-  const productIds = lines.map(({merchandiseId, productId}) => parseInt(productId ?? merchandiseId, 10));
+  const productIds = lines.map(({ merchandiseId, productId }) =>
+    parseInt(productId ?? merchandiseId, 10)
+  );
   const bigCommerceProductListRes = await bigCommerceFetch<BigCommerceProductsOperation>({
     query: getStoreProductsQuery,
     variables: {
@@ -172,11 +179,13 @@ const getBigCommerceProductsWithCheckout = async (
     },
     cache: 'no-store'
   });
-  const bigCommerceProductList = bigCommerceProductListRes.body.data.site.products.edges.map((product) => product.node);
+  const bigCommerceProductList = bigCommerceProductListRes.body.data.site.products.edges.map(
+    (product) => product.node
+  );
 
   const createProductList = (idList: number[], products: BigCommerceProduct[]) => {
     return idList.map((productId) => {
-      const productData = products.find(({entityId}) => entityId === productId)!;
+      const productData = products.find(({ entityId }) => entityId === productId)!;
 
       return {
         productId,
@@ -311,9 +320,9 @@ export async function removeFromCart(cartId: string, lineIds: string[]): Promise
     return res;
   };
 
-   if (lineIds.length === 1) {
+  if (lineIds.length === 1) {
     cartState = await removeCartItem(lineIds[0]!);
-   } else if (lineIds.length > 1) {
+  } else if (lineIds.length > 1) {
     // NOTE: can it happen at all??
     let operations = lineIds.length;
 
@@ -325,7 +334,10 @@ export async function removeFromCart(cartId: string, lineIds: string[]): Promise
 
   const cart = cartState!.body.data.cart.deleteCartLineItem.cart;
   const lines = vercelFromBigCommerceLineItems(cart.lineItems);
-  const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(cartId, lines);
+  const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(
+    cartId,
+    lines
+  );
 
   return bigCommerceToVercelCart(cart, productsByIdList, checkout, checkoutUrl);
 }
@@ -363,12 +375,15 @@ export async function updateCart(
   }
 
   const updatedCart = cartState!.body.data.cart.updateCartLineItem.cart;
-  const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(cartId, lines);
+  const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(
+    cartId,
+    lines
+  );
 
   return bigCommerceToVercelCart(updatedCart, productsByIdList, checkout, checkoutUrl);
 }
 
-export async function getCart(cartId: string): Promise<VercelCart | null> {
+export async function getCart(cartId: string): Promise<VercelCart | undefined> {
   const res = await bigCommerceFetch<BigCommerceCartOperation>({
     query: getCartQuery,
     variables: { entityId: cartId },
@@ -376,12 +391,15 @@ export async function getCart(cartId: string): Promise<VercelCart | null> {
   });
 
   if (!res.body.data.site.cart) {
-    return null;
+    return undefined;
   }
 
   const cart = res.body.data.site.cart;
   const lines = vercelFromBigCommerceLineItems(cart.lineItems);
-  const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(cartId, lines);
+  const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(
+    cartId,
+    lines
+  );
 
   return bigCommerceToVercelCart(cart, productsByIdList, checkout, checkoutUrl);
 }
@@ -493,52 +511,57 @@ export async function getMenu(handle: string): Promise<VercelMenu[]> {
       .split('/')
       .filter((item) => item.length)
       .pop();
-  const createVercelCollectionPath = (title: string, menuType: 'footer' | 'header') => menuType === 'header' ? `/search/${title}`: `/${title}`;
+  const createVercelCollectionPath = (title: string, menuType: 'footer' | 'header') =>
+    menuType === 'header' ? `/search/${title}` : `/${title}`;
   const configureVercelMenu = (
     menuData: BigCommerceCategoryTreeItem[] | BigCommercePage[],
     isMenuData: boolean,
-    menuType?: 'footer' | 'header',
+    menuType?: 'footer' | 'header'
   ): VercelMenu[] => {
     if (isMenuData) {
-      return menuData.flatMap((item) => {
-        let vercelMenuItem;
+      return menuData
+        .flatMap((item) => {
+          let vercelMenuItem;
 
-        if (menuType === 'header') {
-          const { name, path, hasChildren, children } = item as BigCommerceCategoryTreeItem;
-          const vercelTitle = configureMenuPath(path);
-          // NOTE: keep only high level categories for NavBar
-        // if (hasChildren && children) {
-        //   return configureVercelMenu(children, hasChildren);
-        // }
+          if (menuType === 'header') {
+            const { name, path, hasChildren, children } = item as BigCommerceCategoryTreeItem;
+            const vercelTitle = configureMenuPath(path);
+            // NOTE: keep only high level categories for NavBar
+            // if (hasChildren && children) {
+            //   return configureVercelMenu(children, hasChildren);
+            // }
 
-          vercelMenuItem = {
-            title: name,
-            path: createVercelCollectionPath(vercelTitle!, menuType ?? 'header' )
-          };
+            vercelMenuItem = {
+              title: name,
+              path: createVercelCollectionPath(vercelTitle!, menuType ?? 'header')
+            };
 
-          return [vercelMenuItem];
-        }
+            return [vercelMenuItem];
+          }
 
-        if (menuType === 'footer') {
-          const { isVisibleInNavigation, name, path } = item as BigCommercePage;
-          const vercelTitle = configureMenuPath(path);
+          if (menuType === 'footer') {
+            const { isVisibleInNavigation, name, path } = item as BigCommercePage;
+            const vercelTitle = configureMenuPath(path);
 
-          vercelMenuItem = {
-            title: name,
-            path: createVercelCollectionPath(vercelTitle!, menuType ?? 'footer' )
-          };
-          // NOTE: blog has different structure & separate mapper
-          return vercelMenuItem.title === 'Blog' || !isVisibleInNavigation ? [] : [vercelMenuItem];
-        }
+            vercelMenuItem = {
+              title: name,
+              path: createVercelCollectionPath(vercelTitle!, menuType ?? 'footer')
+            };
+            // NOTE: blog has different structure & separate mapper
+            return vercelMenuItem.title === 'Blog' || !isVisibleInNavigation
+              ? []
+              : [vercelMenuItem];
+          }
 
-        return [];
-      }).slice(0, 4);
+          return [];
+        })
+        .slice(0, 4);
     }
 
     return [];
   };
 
-  if(handle === 'next-js-frontend-footer-menu') {
+  if (handle === 'next-js-frontend-footer-menu') {
     const res = await bigCommerceFetch<BigCommercePagesOperation>({
       query: getPagesQuery
     });
@@ -547,7 +570,7 @@ export async function getMenu(handle: string): Promise<VercelMenu[]> {
     return configureVercelMenu(webPages, true, 'footer');
   }
 
-  if(handle === 'next-js-frontend-header-menu') {
+  if (handle === 'next-js-frontend-header-menu') {
     const res = await bigCommerceFetch<BigCommerceMenuOperation>({
       query: getMenuQuery
     });
@@ -591,17 +614,24 @@ export async function getProduct(handle: string): Promise<VercelProduct | undefi
   return bigCommerceToVercelProduct(res.body.data.site.product);
 }
 
-export async function getProductIdBySlug(path: string): Promise<{__typename: 'Product'
-| 'Category'
-| 'Brand'
-| 'NormalPage'
-| 'ContactPage'
-| 'RawHtmlPage'
-| 'BlogIndexPage', entityId: number} | undefined> {
+export async function getProductIdBySlug(path: string): Promise<
+  | {
+      __typename:
+        | 'Product'
+        | 'Category'
+        | 'Brand'
+        | 'NormalPage'
+        | 'ContactPage'
+        | 'RawHtmlPage'
+        | 'BlogIndexPage';
+      entityId: number;
+    }
+  | undefined
+> {
   const res = await bigCommerceFetch<BigCommerceEntityIdOperation>({
     query: getEntityIdByRouteQuery,
     variables: {
-      path,
+      path
     }
   });
 
@@ -646,4 +676,10 @@ export async function getProducts({
   );
 
   return bigCommerceToVercelProducts(productList);
+}
+
+// This is called from `app/api/revalidate.ts` so providers can control revalidation logic.
+// eslint-disable-next-line no-unused-vars
+export async function revalidate(req: NextRequest): Promise<NextResponse> {
+  return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
 }
