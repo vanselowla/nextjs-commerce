@@ -6,7 +6,6 @@ import { addItem } from 'components/cart/actions';
 
 import LoadingDots from 'components/loading-dots';
 import { VercelProductVariant as ProductVariant } from 'lib/bigcommerce/types';
-import { useCookies } from 'react-cookie';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 
@@ -19,7 +18,6 @@ export function AddToCart({
   variants: ProductVariant[];
   availableForSale: boolean;
 }) {
-  const [, setCookie] = useCookies(['cartId']);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -52,12 +50,6 @@ export function AddToCart({
             alert(response);
             return;
           }
-
-          setCookie('cartId', response, {
-            path: '/',
-            sameSite: 'strict',
-            secure: process.env.NODE_ENV === 'production'
-          });
 
           router.refresh();
         });

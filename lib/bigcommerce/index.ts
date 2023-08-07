@@ -1,9 +1,6 @@
 import { isVercelCommerceError } from 'lib/type-guards';
-import { revalidateTag } from 'next/cache';
-import { headers } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { BIGCOMMERCE_GRAPHQL_API_ENDPOINT } from './constants';
-import { TAGS } from 'lib/constants';
 
 import {
   bigCommerceToVercelCart,
@@ -303,7 +300,7 @@ export async function addToCart(
   return bigCommerceToVercelCart(bigCommerceCart, productsByIdList, checkout, checkoutUrl);
 }
 
-export async function removeFromCart(cartId: string, lineIds: string[]): Promise<VercelCart> {
+export async function removeFromCart(cartId: string, lineIds: string[]): Promise<VercelCart | undefined> {
   let cartState: { status: number; body: BigCommerceDeleteCartItemOperation };
   const removeCartItem = async (itemId: string) => {
     const res = await bigCommerceFetch<BigCommerceDeleteCartItemOperation>({
@@ -333,6 +330,11 @@ export async function removeFromCart(cartId: string, lineIds: string[]): Promise
   }
 
   const cart = cartState!.body.data.cart.deleteCartLineItem.cart;
+
+  if (cart === null)  {
+    return undefined;
+  }
+
   const lines = vercelFromBigCommerceLineItems(cart.lineItems);
   const { productsByIdList, checkout, checkoutUrl } = await getBigCommerceProductsWithCheckout(
     cartId,

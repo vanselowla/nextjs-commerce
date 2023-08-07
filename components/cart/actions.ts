@@ -8,7 +8,7 @@ export const addItem = async (
   productId: string,
   variantId: string | undefined
 ): Promise<Error | string> => {
-  let cartId = cookies().get('cartId')?.value;
+  const cartId = cookies().get('cartId')?.value;
 
   if ((!isBigCommerceAPI && !cartId) || !variantId) {
     return new Error('Missing cartId or variantId');
@@ -33,7 +33,11 @@ export const removeItem = async (lineId: string): Promise<Error | undefined> => 
     return new Error('Missing cartId');
   }
   try {
-    await removeFromCart(cartId, [lineId]);
+    const response = await removeFromCart(cartId, [lineId]);
+
+    if (!response && cartId) {
+      cookies().delete('cartId');
+    }
   } catch (e) {
     return new Error('Error removing item', { cause: e });
   }
