@@ -1,12 +1,21 @@
 'use server';
 
 import { TAGS } from 'lib/constants';
-import { addToCart, createCart, getCart, removeFromCart, updateCart } from 'lib/bigcommerce';
+import { addToCart, removeFromCart, updateCart } from 'lib/bigcommerce';
 import { revalidateTag } from 'next/cache';
 import { cookies } from 'next/headers';
 
-export async function addItem(prevState: any, productId: string, variantId: string | undefined) {
-  let cartId = cookies().get('cartId')?.value;
+export async function addItem(
+  prevState: any,
+  {
+    selectedProductId,
+    selectedVariantId
+  }: {
+    selectedProductId: string | undefined;
+    selectedVariantId: string | undefined;
+  }
+) {
+  const cartId = cookies().get('cartId')?.value;
 
   if (!selectedVariantId) {
     return 'Missing product variant ID';
@@ -14,11 +23,10 @@ export async function addItem(prevState: any, productId: string, variantId: stri
 
   try {
     const { id } = await addToCart(cartId ?? '', [
-      { merchandiseId: variantId, quantity: 1, productId }
+      { merchandiseId: selectedVariantId, quantity: 1, productId: selectedProductId }
     ]);
     revalidateTag(TAGS.cart);
     cookies().set('cartId', id);
-    return id;
   } catch (e) {
     return 'Error adding item to cart';
   }
@@ -58,7 +66,7 @@ export async function updateItemQuantity(
     return 'Missing cart ID';
   }
 
-  const { lineId, variantId, quantity } = payload;
+  const { lineId, productSlug, variantId, quantity } = payload;
 
   try {
     if (quantity === 0) {

@@ -4,7 +4,7 @@ import { PlusIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { addItem } from 'components/cart/actions';
 import LoadingDots from 'components/loading-dots';
-import { ProductVariant } from 'lib/bigcommerce/types';
+import { VercelProductVariant as ProductVariant } from 'lib/bigcommerce/types';
 import { useSearchParams } from 'next/navigation';
 import {
   // @ts-ignore
@@ -76,7 +76,7 @@ export function AddToCart({
 }) {
   const [message, formAction] = useFormState(addItem, null);
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const defaultVariantId = variants.length === 1 ? variants[0]?.id : undefined;
   const defaultProductId = variants.length === 1 ? variants[0]?.parentId : undefined;
   const variant = variants.find((variant: ProductVariant) =>
     variant.selectedOptions.every(
@@ -84,7 +84,8 @@ export function AddToCart({
     )
   );
   const selectedVariantId = variant?.id || defaultVariantId;
-  const actionWithVariant = formAction.bind(null, selectedVariantId);
+  const selectedProductId = variant?.parentId || defaultProductId;
+  const actionWithVariant = formAction.bind(null, { selectedProductId, selectedVariantId });
 
   return (
     <form action={actionWithVariant}>
