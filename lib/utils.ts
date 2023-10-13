@@ -11,7 +11,11 @@ export const ensureStartsWith = (stringToCheck: string, startsWith: string) =>
   stringToCheck.startsWith(startsWith) ? stringToCheck : `${startsWith}${stringToCheck}`;
 
 export const validateEnvironmentVariables = () => {
-  const requiredEnvironmentVariables = ['SHOPIFY_STORE_DOMAIN', 'SHOPIFY_STOREFRONT_ACCESS_TOKEN'];
+  const requiredEnvironmentVariables = [
+    'BIGCOMMERCE_CANONICAL_STORE_DOMAIN',
+    'BIGCOMMERCE_ACCESS_TOKEN',
+    'BIGCOMMERCE_CUSTOMER_IMPERSONATION_TOKEN'
+  ];
   const missingEnvironmentVariables = [] as string[];
 
   requiredEnvironmentVariables.forEach((envVar) => {
