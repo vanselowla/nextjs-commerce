@@ -4,7 +4,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { removeItem } from 'components/cart/actions';
 import LoadingDots from 'components/loading-dots';
-import type { CartItem } from 'lib/bigcommerce/types';
+import type { VercelCartItem as CartItem } from 'lib/bigcommerce/types';
 import {
   // @ts-ignore
   experimental_useFormState as useFormState,

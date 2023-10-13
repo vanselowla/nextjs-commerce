@@ -4,7 +4,7 @@ import { MinusIcon, PlusIcon } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
 import { updateItemQuantity } from 'components/cart/actions';
 import LoadingDots from 'components/loading-dots';
-import type { CartItem } from 'lib/bigcommerce/types';
+import type { VercelCartItem as CartItem } from 'lib/bigcommerce/types';
 import {
   // @ts-ignore
   experimental_useFormState as useFormState,
@@ -45,6 +45,7 @@ export function EditItemQuantityButton({ item, type }: { item: CartItem; type: '
   const [message, formAction] = useFormState(updateItemQuantity, null);
   const payload = {
     lineId: item.id,
+    productSlug: item.merchandise.product.handle,
     variantId: item.merchandise.id,
     quantity: type === 'plus' ? item.quantity + 1 : item.quantity - 1
   };
