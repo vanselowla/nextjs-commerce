@@ -1,6 +1,7 @@
 export interface VercelCommerceErrorLike {
   status: number;
   message: Error;
+  cause?: Error;
 }
 
 export const isObject = (object: unknown): object is Record<string, unknown> => {
