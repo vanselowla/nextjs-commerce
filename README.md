@@ -14,6 +14,10 @@ A Next.js 13 and App Router-ready headless storefront template for BigCommerce, 
 - Styling with [Tailwind CSS](https://tailwindcss.com/)
 - Automatic light/dark mode based on system settings
 
+## 🔎 Looking for more? 
+
+Learn more about our suite of Next.js 13+ tools for enterprise commerce: https://developer.bigcommerce.com/catalyst
+
 ## Prerequisites
 
 Next.js + BigCommerce requires a [BigCommerce sandbox](https://developer.bigcommerce.com/api-docs/partner/create-a-sandbox) or a [production store provisioned to run a headless storefront](https://www.bigcommerce.com/solutions/multi-store/).
