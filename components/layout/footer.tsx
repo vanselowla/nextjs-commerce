@@ -48,11 +48,11 @@ export default async function Footer() {
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-1 px-4 md:flex-row md:gap-0 md:px-4 min-[1320px]:px-0">
           <p>
             &copy; {copyrightDate} {copyrightName}
-            {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''} All rights reserved.
+            {copyrightName.length && !copyrightName.endsWith('.') ? '.' : ''}
           </p>
           <p className="md:ml-auto">
-            <a href="https://bigcommerce.com" className="text-black dark:text-white">
-              Crafted by BigCommerce
+            <a href="https://baywa.de" className="text-[#333]">
+              Made in Munich
             </a>
           </p>
         </div>
